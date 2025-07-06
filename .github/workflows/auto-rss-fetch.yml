@@ -1,0 +1,74 @@
+name: 🔥 自动RSS抓取
+
+on:
+  schedule:
+    # 每天上午9点（UTC+8 = UTC+0 - 8小时 = 1:00 UTC）
+    - cron: '0 1 * * *'
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  fetch-rss:
+    runs-on: ubuntu-latest
+    name: 自动抓取RSS源
+    
+    steps:
+    - name: 🔥 抓取3D打印RSS
+      run: |
+        curl -X POST '${{ secrets.SUPABASE_URL }}/functions/v1/fetch-rss' \
+          -H 'Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}' \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "rssUrl": "https://news.google.com/rss/search?q=3D+printing&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+            "sourceName": "3D Print",
+            "verticalName": "3D打印"
+          }'
+    
+    - name: 🔥 抓取SEO RSS
+      run: |
+        curl -X POST '${{ secrets.SUPABASE_URL }}/functions/v1/fetch-rss' \
+          -H 'Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}' \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "rssUrl": "https://news.google.com/rss/search?q=SEO&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+            "sourceName": "SEO News",
+            "verticalName": "SEO"
+          }'
+    
+    - name: 🔥 抓取农业科技RSS
+      run: |
+        curl -X POST '${{ secrets.SUPABASE_URL }}/functions/v1/fetch-rss' \
+          -H 'Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}' \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "rssUrl": "https://news.google.com/rss/search?q=农业机器人&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
+            "sourceName": "AgriTech",
+            "verticalName": "农业科技"
+          }'
+    
+    - name: 🔥 抓取智慧农业RSS
+      run: |
+        curl -X POST '${{ secrets.SUPABASE_URL }}/functions/v1/fetch-rss' \
+          -H 'Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}' \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "rssUrl": "https://news.google.com/rss/search?q=Smart+Agriculture&hl=en&gl=US&ceid=US:en",
+            "sourceName": "Smart Agriculture",
+            "verticalName": "智慧农业"
+          }'
+    
+    - name: 🔥 抓取增材制造RSS
+      run: |
+        curl -X POST '${{ secrets.SUPABASE_URL }}/functions/v1/fetch-rss' \
+          -H 'Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}' \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "rssUrl": "https://news.google.com/rss/search?q=additivemanufacturing&hl=en&gl=US&ceid=US:en",
+            "sourceName": "Additive Manufacturing",
+            "verticalName": "增材制造"
+          }'
+    
+    - name: 📊 抓取完成通知
+      run: |
+        echo "✅ 所有RSS源抓取完成！"
+        echo "⏰ 抓取时间: $(date)"
