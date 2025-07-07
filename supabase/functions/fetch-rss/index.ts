@@ -231,14 +231,27 @@ async function fetchFullTextWithJina(url) {
       
       if (response.ok) {
         const data = await response.json();
-        if (data.data && data.data.content && data.data.content.length > 100) {
-          console.log(`📖 ✅ Jina API成功，长度: ${data.data.content.length}字符`);
-          return data.data.content;
-        } else if (data.content && data.content.length > 100) {
-          console.log(`📖 ✅ Jina API成功，长度: ${data.content.length}字符`);
-          return data.content;
+        console.log(`📖 Jina API响应结构: ${JSON.stringify(data).substring(0, 300)}...`);
+        
+        // 尝试多种可能的响应格式
+        let content = null;
+        if (data.data && data.data.content) {
+          content = data.data.content;
+        } else if (data.content) {
+          content = data.content;
+        } else if (data.data && data.data.text) {
+          content = data.data.text;
+        } else if (data.text) {
+          content = data.text;
+        } else if (typeof data === 'string') {
+          content = data;
+        }
+        
+        if (content && content.length > 100) {
+          console.log(`📖 ✅ Jina API成功，长度: ${content.length}字符`);
+          return content;
         } else {
-          console.log(`⚠️ Jina API返回内容过短: ${JSON.stringify(data).substring(0, 200)}...`);
+          console.log(`⚠️ Jina API返回内容过短或无效: ${JSON.stringify(data).substring(0, 200)}...`);
         }
       } else {
         const errorText = await response.text();
