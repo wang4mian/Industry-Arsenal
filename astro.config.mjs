@@ -1,6 +1,10 @@
 import { defineConfig } from 'astro/config'
+import node from '@astrojs/node'
 
 export default defineConfig({
-  output: 'static',
+  output: 'server',
+  adapter: node({
+    mode: 'standalone'
+  }),
   site: 'https://osint-workstation.vercel.app'
 })
