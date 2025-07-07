@@ -201,8 +201,8 @@ async function fetchFullTextWithJina(url) {
     return null;
   }
   
-  // 重试机制：最多重试3次
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  // 重试机制：最多重试2次 (减少重试次数，避免总时间过长)
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       console.log(`📖 第${attempt}次尝试Jina API...`);
       
@@ -216,9 +216,9 @@ async function fetchFullTextWithJina(url) {
           'X-Return-Format': 'markdown', // 使用markdown格式，通常内容更完整
           'X-Retain-Images': 'none',     // 不保留图片，专注文本内容
           'X-Wait-For-Selector': 'article, main, .content, #content, .post-content', // 等待主要内容加载
-          'X-Timeout': '20000'           // 20秒页面加载超时
+          'X-Timeout': '15000'           // 15秒页面加载超时
         },
-        signal: AbortSignal.timeout(60000) // 60秒超时
+        signal: AbortSignal.timeout(30000) // 30秒超时 (减少超时时间，快速失败)
       });
       
       console.log(`📖 Jina API响应状态: ${response.status}`);
@@ -263,14 +263,14 @@ async function fetchFullTextWithJina(url) {
     }
     
     // 如果不是最后一次尝试，等待后重试
-    if (attempt < 3) {
-      const waitTime = attempt * 3000; // 递增等待时间：3秒、6秒
+    if (attempt < 2) {
+      const waitTime = 2000; // 固定2秒等待时间
       console.log(`⏳ 等待${waitTime/1000}秒后重试...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
   
-  console.log(`❌ Jina API三次尝试都失败，返回null`);
+  console.log(`❌ Jina API两次尝试都失败，返回null`);
   return null;
 }
 // ===== 步骤3: Gemini LLM 分析全文 - 摘要和打分 =====
