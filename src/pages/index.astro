@@ -1073,12 +1073,18 @@
           try {
             console.log(`正在抓取: ${source.name}`)
             
-            // 调用Supabase Edge Function
+            // 调用Supabase Edge Function (设置90秒超时)
             const { data, error } = await supabase.functions.invoke('fetch-rss', {
               body: { 
                 rssUrl: source.url, 
                 sourceName: source.name,
                 verticalName: source.vertical_name
+              },
+              options: {
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                timeout: 90000 // 90秒超时
               }
             })
 
