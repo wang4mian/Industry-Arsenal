@@ -216,9 +216,9 @@ async function fetchFullTextWithJina(url) {
           'X-Return-Format': 'markdown', // 使用markdown格式，通常内容更完整
           'X-Retain-Images': 'none',     // 不保留图片，专注文本内容
           'X-Wait-For-Selector': 'article, main, .content, #content, .post-content', // 等待主要内容加载
-          'X-Timeout': '30000'           // 30秒页面加载超时
+          'X-Timeout': '20000'           // 20秒页面加载超时
         },
-        signal: AbortSignal.timeout(45000) // 45秒超时
+        signal: AbortSignal.timeout(60000) // 60秒超时
       });
       
       console.log(`📖 Jina API响应状态: ${response.status}`);
@@ -264,7 +264,7 @@ async function fetchFullTextWithJina(url) {
     
     // 如果不是最后一次尝试，等待后重试
     if (attempt < 3) {
-      const waitTime = attempt * 1000; // 递增等待时间：1秒、2秒
+      const waitTime = attempt * 3000; // 递增等待时间：3秒、6秒
       console.log(`⏳ 等待${waitTime/1000}秒后重试...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
