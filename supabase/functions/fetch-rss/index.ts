@@ -193,7 +193,10 @@ async function fetchFullTextWithJina(url) {
           'Authorization': `Bearer ${jinaApiKey}`,
           'Accept': 'application/json',
           'User-Agent': 'Mozilla/5.0 (compatible; OSINT-Workstation/3.0; +https://industry-arsenal.vercel.app)',
-          'X-Return-Format': 'text' // 指定返回纯文本格式
+          'X-Return-Format': 'markdown', // 使用markdown格式，通常内容更完整
+          'X-Retain-Images': 'none',     // 不保留图片，专注文本内容
+          'X-Wait-For-Selector': 'article, main, .content, #content, .post-content', // 等待主要内容加载
+          'X-Timeout': '30000'           // 30秒页面加载超时
         },
         signal: AbortSignal.timeout(45000) // 45秒超时
       });
