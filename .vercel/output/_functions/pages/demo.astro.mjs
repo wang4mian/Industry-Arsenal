@@ -1,0 +1,27 @@
+import { c as createComponent, r as renderScript, a as renderHead, b as renderTemplate } from '../chunks/astro/server_DCy4IZz9.mjs';
+import 'kleur/colors';
+import 'clsx';
+/* empty css                                */
+export { renderers } from '../renderers.mjs';
+
+const $$Demo = createComponent(($$result, $$props, $$slots) => {
+  return renderTemplate`<html lang="zh-CN" data-astro-cid-prwxh6m4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OSINT 工作台 Demo</title>${renderScript($$result, "/Users/simianwang/Desktop/\u4EA7\u4E1A\u7F16\u8BD1\u5DE5\u4F5C\u5BA4/src/pages/demo.astro?astro&type=script&index=0&lang.ts")}${renderScript($$result, "/Users/simianwang/Desktop/\u4EA7\u4E1A\u7F16\u8BD1\u5DE5\u4F5C\u5BA4/src/pages/demo.astro?astro&type=script&index=1&lang.ts")}${renderScript($$result, "/Users/simianwang/Desktop/\u4EA7\u4E1A\u7F16\u8BD1\u5DE5\u4F5C\u5BA4/src/pages/demo.astro?astro&type=script&index=2&lang.ts")}${renderHead()}</head> <body data-astro-cid-prwxh6m4> <div class="dashboard" data-astro-cid-prwxh6m4> <header class="header" data-astro-cid-prwxh6m4> <div class="brand" data-astro-cid-prwxh6m4>OSINT 工作台 V3.0 Demo</div> <div class="nav-controls" data-astro-cid-prwxh6m4> <input type="text" class="input" placeholder="搜索标题..." data-astro-cid-prwxh6m4> <button class="btn btn-secondary" data-astro-cid-prwxh6m4>过滤器</button> <button class="btn btn-primary" data-astro-cid-prwxh6m4>抓取RSS</button> </div> </header> <main class="main-content" data-astro-cid-prwxh6m4> <!-- 左侧信息源面板 --> <div class="panel" data-astro-cid-prwxh6m4> <div class="panel-header" data-astro-cid-prwxh6m4> <h2 class="panel-title" data-astro-cid-prwxh6m4>信息源</h2> <p class="panel-description" data-astro-cid-prwxh6m4>浏览和选择文章</p> </div> <div class="panel-content" id="articlesPanel" data-astro-cid-prwxh6m4> <!-- 模拟文章卡片 --> <div class="card" data-astro-cid-prwxh6m4> <div class="badge" data-astro-cid-prwxh6m4>评分: 9</div> <a href="#" class="article-title" data-astro-cid-prwxh6m4>3D打印技术在航空制造业的最新应用</a> <p class="article-summary" data-astro-cid-prwxh6m4>最新研究显示，3D打印技术在航空制造业中的应用正在快速发展，特别是在复杂零部件制造方面展现出巨大潜力...</p> <div class="article-footer" data-astro-cid-prwxh6m4> <span class="article-source" data-astro-cid-prwxh6m4>3D Print</span> <button class="btn btn-primary btn-sm" onclick="selectArticle(this)" data-astro-cid-prwxh6m4>+ 选中</button> </div> </div> <div class="card" data-astro-cid-prwxh6m4> <div class="badge" data-astro-cid-prwxh6m4>评分: 8</div> <a href="#" class="article-title" data-astro-cid-prwxh6m4>SEO优化：2024年最新算法更新解读</a> <p class="article-summary" data-astro-cid-prwxh6m4>Google最新发布的算法更新对搜索引擎优化策略产生了重大影响，内容质量和用户体验成为关键因素...</p> <div class="article-footer" data-astro-cid-prwxh6m4> <span class="article-source" data-astro-cid-prwxh6m4>SEO</span> <button class="btn btn-primary btn-sm" onclick="selectArticle(this)" data-astro-cid-prwxh6m4>+ 选中</button> </div> </div> <div class="card" data-astro-cid-prwxh6m4> <div class="badge" data-astro-cid-prwxh6m4>评分: 7</div> <a href="#" class="article-title" data-astro-cid-prwxh6m4>农业机器人技术助力智慧农业发展</a> <p class="article-summary" data-astro-cid-prwxh6m4>新一代农业机器人结合AI技术，能够实现精准种植、智能施肥和自动收割，大幅提升农业生产效率...</p> <div class="article-footer" data-astro-cid-prwxh6m4> <span class="article-source" data-astro-cid-prwxh6m4>AgriTech</span> <button class="btn btn-primary btn-sm" onclick="selectArticle(this)" data-astro-cid-prwxh6m4>+ 选中</button> </div> </div> <div class="card" data-astro-cid-prwxh6m4> <div class="badge" data-astro-cid-prwxh6m4>评分: 8</div> <a href="#" class="article-title" data-astro-cid-prwxh6m4>Y Combinator 2024春季Demo Day精彩回顾</a> <p class="article-summary" data-astro-cid-prwxh6m4>本届Demo Day展示了众多创新项目，涵盖AI、生物技术、清洁能源等多个领域的前沿创业公司...</p> <div class="article-footer" data-astro-cid-prwxh6m4> <span class="article-source" data-astro-cid-prwxh6m4>Startup</span> <button class="btn btn-primary btn-sm" onclick="selectArticle(this)" data-astro-cid-prwxh6m4>+ 选中</button> </div> </div> </div> </div> <!-- 右侧草稿箱面板 --> <div class="panel" data-astro-cid-prwxh6m4> <div class="panel-header" data-astro-cid-prwxh6m4> <h2 class="panel-title" data-astro-cid-prwxh6m4>草稿箱</h2> <p class="panel-description" data-astro-cid-prwxh6m4>编辑和整理选中的文章</p> </div> <div class="panel-content" data-astro-cid-prwxh6m4> <div id="draftsContainer" data-astro-cid-prwxh6m4> <p style="text-align: center; color: hsl(var(--muted-foreground)); padding: 3rem;" data-astro-cid-prwxh6m4>
+从左侧选择文章开始编辑
+</p> </div> <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid hsl(var(--border));" data-astro-cid-prwxh6m4> <button class="btn btn-primary" style="width: 100%;" onclick="generateContent()" data-astro-cid-prwxh6m4> <i data-lucide="send" style="width: 1rem; height: 1rem;" data-astro-cid-prwxh6m4></i>
+生成并复制内容
+</button> </div> </div> </div> </main> </div> ${renderScript($$result, "/Users/simianwang/Desktop/\u4EA7\u4E1A\u7F16\u8BD1\u5DE5\u4F5C\u5BA4/src/pages/demo.astro?astro&type=script&index=3&lang.ts")} </body> </html>`;
+}, "/Users/simianwang/Desktop/\u4EA7\u4E1A\u7F16\u8BD1\u5DE5\u4F5C\u5BA4/src/pages/demo.astro", void 0);
+
+const $$file = "/Users/simianwang/Desktop/产业编译工作室/src/pages/demo.astro";
+const $$url = "/demo";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Demo,
+  file: $$file,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };

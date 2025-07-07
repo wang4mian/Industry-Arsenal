@@ -1,0 +1,83 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/check-schema/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/debug-tables/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/fetch-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/gemini/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/mock-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/proxy-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/simple-test/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/smart-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/test-direct-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/test-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/test-single-rss/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/demo/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/index-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/index-v2/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		}
+	]
+}

@@ -1,0 +1,968 @@
+---
+// OSINT 工作台 V3.0 - 使用shadcn blocks
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSINT 工作台 V3.0 - shadcn版</title>
+  <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    /* shadcn/ui 完整样式系统 */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --primary: 224.3 76.3% 48%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 224.3 76.3% 48%;
+      --radius: 0.5rem;
+    }
+
+    .dark {
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --primary: 224.3 76.3% 48%;
+      --primary-foreground: 222.2 84% 4.9%;
+      --secondary: 217.2 32.6% 17.5%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 17.5%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 224.3 76.3% 48%;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-feature-settings: "rlig" 1, "calt" 1;
+    }
+
+    /* shadcn/ui Dashboard Layout Block */
+    .dashboard-layout {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dashboard-header {
+      border-bottom: 1px solid hsl(var(--border));
+      background: hsl(var(--background));
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .dashboard-content {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* shadcn/ui Navigation Block */
+    .nav-container {
+      display: flex;
+      height: 4rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      gap: 1rem;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: hsl(var(--foreground));
+    }
+
+    /* shadcn/ui Button Components */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-decoration: none;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .btn:disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .btn-default {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      padding: 0.5rem 1rem;
+      height: 2.5rem;
+    }
+
+    .btn-default:hover {
+      background: hsl(var(--primary) / 0.9);
+    }
+
+    .btn-secondary {
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+      padding: 0.5rem 1rem;
+      height: 2.5rem;
+    }
+
+    .btn-secondary:hover {
+      background: hsl(var(--secondary) / 0.8);
+    }
+
+    .btn-outline {
+      border: 1px solid hsl(var(--input));
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      padding: 0.5rem 1rem;
+      height: 2.5rem;
+    }
+
+    .btn-outline:hover {
+      background: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: hsl(var(--foreground));
+      padding: 0.5rem 1rem;
+      height: 2.5rem;
+    }
+
+    .btn-ghost:hover {
+      background: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.75rem;
+      height: 2rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+    }
+
+    .btn-icon-sm {
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+    }
+
+    /* shadcn/ui Input Component */
+    .input {
+      display: flex;
+      height: 2.5rem;
+      width: 100%;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--input));
+      background: hsl(var(--background));
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      transition: border-color 0.15s ease;
+      file: {
+        border: 0;
+        background: transparent;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+    }
+
+    .input::placeholder {
+      color: hsl(var(--muted-foreground));
+    }
+
+    /* shadcn/ui Card Component */
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid hsl(var(--border));
+      background: hsl(var(--card));
+      color: hsl(var(--card-foreground));
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      flex-direction: column;
+      space-y: 1.5;
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.025em;
+    }
+
+    .card-description {
+      font-size: 0.875rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .card-content {
+      padding: 1.5rem;
+      padding-top: 0;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      padding: 1.5rem;
+      padding-top: 0;
+    }
+
+    /* shadcn/ui Badge Component */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 9999px;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1;
+      transition: color 0.15s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-default {
+      border: 1px solid transparent;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .badge-secondary {
+      border: 1px solid transparent;
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+    }
+
+    .badge-destructive {
+      border: 1px solid transparent;
+      background: hsl(var(--destructive));
+      color: hsl(var(--destructive-foreground));
+    }
+
+    .badge-outline {
+      color: hsl(var(--foreground));
+      border: 1px solid hsl(var(--border));
+    }
+
+    /* shadcn/ui Tabs Component */
+    .tabs-root {
+      width: 100%;
+    }
+
+    .tabs-list {
+      display: inline-flex;
+      height: 2.5rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: calc(var(--radius) - 2px);
+      background: hsl(var(--muted));
+      padding: 0.25rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .tabs-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      border-radius: calc(var(--radius) - 4px);
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.25rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: inherit;
+    }
+
+    .tabs-trigger[data-state="active"] {
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .tabs-trigger:hover:not([data-state="active"]) {
+      background: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+    }
+
+    /* Layout Styles */
+    .main-grid {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 40fr 60fr;
+      gap: 1px;
+      background: hsl(var(--border));
+    }
+
+    .panel {
+      background: hsl(var(--background));
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+      background: hsl(var(--muted) / 0.3);
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    /* Article Cards */
+    .article-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .article-card {
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .article-card:hover {
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .article-card.selected {
+      background: hsl(var(--muted));
+      border-color: hsl(var(--muted-foreground));
+    }
+
+    .article-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .article-title {
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+      color: hsl(var(--foreground));
+      text-decoration: none;
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .article-title:hover {
+      color: hsl(var(--primary));
+    }
+
+    .article-summary {
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 1rem;
+    }
+
+    .article-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .article-source {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    /* Draft Cards */
+    .drafts-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .draft-card {
+      cursor: grab;
+      transition: all 0.15s ease;
+    }
+
+    .draft-card:active {
+      cursor: grabbing;
+    }
+
+    .draft-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+
+    .draft-textarea {
+      width: 100%;
+      min-height: 6rem;
+      border: 1px solid hsl(var(--input));
+      border-radius: calc(var(--radius) - 2px);
+      padding: 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      resize: vertical;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      transition: border-color 0.15s ease;
+    }
+
+    .draft-textarea:focus {
+      outline: none;
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+    }
+
+    .draft-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+
+    /* Active Filters */
+    .active-filters {
+      background: hsl(var(--muted) / 0.5);
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 0.75rem 1.5rem;
+      display: none;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .active-filters.visible {
+      display: flex;
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .filter-pill-remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      background: hsl(var(--primary-foreground) / 0.2);
+      color: hsl(var(--primary-foreground));
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .filter-pill-remove:hover {
+      background: hsl(var(--primary-foreground) / 0.3);
+    }
+
+    /* Utilities */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 1rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .spinner {
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 2px solid hsl(var(--muted));
+      border-top: 2px solid hsl(var(--primary));
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      text-align: center;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .empty-state svg {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: hsl(var(--foreground));
+    }
+
+    .empty-state p {
+      font-size: 0.875rem;
+      max-width: 20rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+      
+      .nav-container {
+        padding: 0 1rem;
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 4rem;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground) / 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--muted-foreground) / 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="nav-container">
+        <div class="nav-left">
+          <div class="brand">OSINT 工作台 V3.0</div>
+        </div>
+        
+        <div class="nav-right">
+          <button class="btn btn-ghost btn-icon" id="refreshBtn" title="刷新数据">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+          
+          <input 
+            type="text" 
+            class="input" 
+            placeholder="搜索标题..." 
+            id="searchInput"
+            style="width: 300px;"
+          >
+          
+          <button class="btn btn-outline" id="filterBtn">
+            <i data-lucide="filter" class="w-4 h-4"></i>
+            过滤器
+          </button>
+          
+          <button class="btn btn-default" id="fetchRssBtn">
+            <i data-lucide="rss" class="w-4 h-4"></i>
+            抓取RSS
+          </button>
+          
+          <div class="tabs-root">
+            <div class="tabs-list">
+              <button class="tabs-trigger" data-state="active" data-status="inbox">
+                <i data-lucide="inbox" class="w-4 h-4"></i>
+                待处理
+              </button>
+              <button class="tabs-trigger" data-status="selected">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                已选中
+              </button>
+              <button class="tabs-trigger" data-status="all">
+                <i data-lucide="list" class="w-4 h-4"></i>
+                全部
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Active Filters -->
+      <div class="active-filters" id="activeFilters">
+        <span style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-right: 0.5rem;">当前过滤器:</span>
+        <div id="filterPills"></div>
+      </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-content">
+      <div class="main-grid" id="mainGrid">
+        <!-- 左侧信息源面板 -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="card-title">信息源</h2>
+            <p class="card-description">浏览和选择文章</p>
+          </div>
+          <div class="panel-content">
+            <div class="loading" id="loadingIndicator">
+              <div class="spinner"></div>
+              <span style="margin-left: 0.5rem;">加载中...</span>
+            </div>
+            <div class="article-grid" id="articlesList"></div>
+          </div>
+        </div>
+
+        <!-- 右侧草稿箱面板 -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="card-title">草稿箱</h2>
+            <p class="card-description">编辑和整理选中的文章</p>
+          </div>
+          <div class="panel-content">
+            <div class="drafts-grid" id="draftsList"></div>
+            
+            <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid hsl(var(--border));">
+              <button class="btn btn-default" id="publishBtn" style="width: 100%;">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                生成并复制内容
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // 初始化Lucide图标
+    lucide.createIcons();
+
+    // 初始化Supabase客户端
+    const supabaseUrl = 'https://qrmavnygqchgakwqajzj.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFybWF2bnlncWNoZ2Frd3FhanpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMDEyMTMsImV4cCI6MjA1MTg3NzIxM30.lAJk_MU8D1GNZg2nMjRzWGlCfUjgJqULcq3H7pRYYsA'
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+    // 全局状态
+    let currentStatus = 'inbox'
+    let searchQuery = ''
+    let articles = []
+    let drafts = []
+    let sortableInstance = null
+    let activeFilters = {
+      search: '',
+      status: 'inbox',
+      score: null,
+      source: null
+    }
+
+    // 初始化应用
+    async function initApp() {
+      await loadArticles()
+      initEventListeners()
+      initSortable()
+    }
+
+    // 加载文章数据
+    async function loadArticles() {
+      try {
+        showLoading(true)
+        
+        let query = supabase
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        // 根据状态过滤
+        if (currentStatus === 'inbox') {
+          query = query.eq('is_selected', false)
+        } else if (currentStatus === 'selected') {
+          query = query.eq('is_selected', true)
+        }
+
+        // 搜索过滤
+        if (searchQuery) {
+          query = query.ilike('title', `%${searchQuery}%`)
+        }
+
+        const { data, error } = await query
+
+        if (error) {
+          console.error('加载文章失败:', error)
+          showError('加载文章失败: ' + error.message)
+          return
+        }
+
+        articles = data || []
+        renderArticles()
+        
+        // 同时加载草稿
+        await loadDrafts()
+        
+      } catch (error) {
+        console.error('加载文章出错:', error)
+        showError('加载文章出错: ' + error.message)
+      } finally {
+        showLoading(false)
+      }
+    }
+
+    // 加载草稿数据
+    async function loadDrafts() {
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .eq('is_selected', true)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('加载草稿失败:', error)
+          return
+        }
+
+        drafts = data || []
+        renderDrafts()
+      } catch (error) {
+        console.error('加载草稿出错:', error)
+      }
+    }
+
+    // 渲染文章列表
+    function renderArticles() {
+      const container = document.getElementById('articlesList')
+      
+      if (articles.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="inbox" class="w-12 h-12"></i>
+            <h3>暂无文章</h3>
+            <p>点击"抓取RSS"获取最新文章，或尝试调整过滤条件</p>
+          </div>
+        `
+        lucide.createIcons()
+        return
+      }
+
+      container.innerHTML = articles.map(article => `
+        <div class="article-card card ${article.is_selected ? 'selected' : ''}" data-id="${article.id}">
+          <div class="card-content">
+            <div class="article-meta">
+              <div class="badge ${getScoreBadgeClass(article.score_ai)}">
+                评分: ${article.score_ai || 'N/A'}
+              </div>
+            </div>
+            <a href="${article.original_article_link}" target="_blank" class="article-title">
+              ${article.title}
+            </a>
+            <p class="article-summary">${article.summary_ai || '暂无摘要'}</p>
+            <div class="article-footer">
+              <span class="article-source">${article.vertical_name || '未知来源'}</span>
+              <button class="btn ${article.is_selected ? 'btn-secondary' : 'btn-default'} btn-sm" 
+                      onclick="toggleSelection(${article.id})"
+                      ${article.is_selected ? 'disabled' : ''}>
+                ${article.is_selected ? '✓ 已选' : '+ 选中'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    // 渲染草稿列表
+    function renderDrafts() {
+      const container = document.getElementById('draftsList')
+      
+      if (drafts.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="edit" class="w-12 h-12"></i>
+            <h3>暂无草稿</h3>
+            <p>从左侧选择文章开始编辑</p>
+          </div>
+        `
+        lucide.createIcons()
+        return
+      }
+
+      container.innerHTML = drafts.map(draft => `
+        <div class="draft-card card" data-id="${draft.id}">
+          <div class="card-content">
+            <div class="draft-title">${draft.title}</div>
+            <textarea 
+              class="draft-textarea" 
+              placeholder="编辑摘要..." 
+              id="textarea-${draft.id}"
+            >${draft.final_summary || draft.summary_ai || ''}</textarea>
+            <div class="draft-actions">
+              <button class="btn btn-ghost btn-sm" onclick="saveDraftSummary(${draft.id})">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                保存修改
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="removeDraft(${draft.id})">
+                <i data-lucide="x" class="w-4 h-4"></i>
+                移除
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('')
+      
+      lucide.createIcons()
+    }
+
+    // 获取评分徽章样式
+    function getScoreBadgeClass(score) {
+      if (score >= 8) return 'badge-default'
+      if (score >= 6) return 'badge-secondary'
+      if (score >= 1) return 'badge-destructive'
+      return 'badge-outline'
+    }
+
+    // 其他函数保持不变...
+    function toggleSelection(articleId) {
+      console.log('Toggle selection:', articleId)
+    }
+
+    function removeDraft(articleId) {
+      console.log('Remove draft:', articleId)
+    }
+
+    function saveDraftSummary(articleId) {
+      console.log('Save draft:', articleId)
+    }
+
+    function initEventListeners() {
+      // 标签切换
+      document.querySelectorAll('.tabs-trigger').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          // 移除所有active状态
+          document.querySelectorAll('.tabs-trigger').forEach(t => t.setAttribute('data-state', ''))
+          // 添加active状态到当前标签
+          e.target.setAttribute('data-state', 'active')
+          
+          currentStatus = e.target.dataset.status
+          loadArticles()
+        })
+      })
+    }
+
+    function initSortable() {
+      // SortableJS初始化
+    }
+
+    function showLoading(show) {
+      const loading = document.getElementById('loadingIndicator')
+      const articlesList = document.getElementById('articlesList')
+      
+      if (show) {
+        loading.style.display = 'flex'
+        articlesList.style.display = 'none'
+      } else {
+        loading.style.display = 'none'
+        articlesList.style.display = 'block'
+      }
+    }
+
+    function showError(message) {
+      alert('错误: ' + message)
+    }
+
+    // 启动应用
+    initApp()
+  </script>
+</body>
+</html>
