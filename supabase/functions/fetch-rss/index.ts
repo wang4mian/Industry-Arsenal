@@ -21,25 +21,31 @@ serve(async (req)=>{
     const rssArticles = await fetchRSSBasicInfo(rssUrl);
     console.log(`📄 RSS拉取完成，找到 ${rssArticles.length} 篇文章`);
     const processedArticles = [];
-    // 处理每篇文章
-    for (const rssArticle of rssArticles.slice(0, 5)){
+    // 处理每篇文章 (带请求间隔)
+    for (let i = 0; i < Math.min(rssArticles.length, 5); i++) {
+      const rssArticle = rssArticles[i];
       try {
-        console.log(`🔄 处理文章: ${rssArticle.title.substring(0, 50)}...`);
+        console.log(`🔄 处理文章 ${i+1}/${Math.min(rssArticles.length, 5)}: ${rssArticle.title.substring(0, 50)}...`);
+        
         // 检查文章是否已存在
         const { data: existingArticle } = await supabaseClient.from('articles').select('id').eq('original_article_link', rssArticle.link).maybeSingle();
         if (existingArticle) {
           console.log(`⚠️ 文章已存在，跳过`);
           continue;
         }
-        // ===== 步骤2: Jina API 读取全文 =====
-        const fullContent = await fetchFullTextWithJina(rssArticle.link);
+        
+        // ===== 步骤2: Jina API 读取全文 (带降级处理) =====
+        let fullContent = await fetchFullTextWithJina(rssArticle.link);
         if (!fullContent || fullContent.length < 100) {
-          console.log(`❌ 全文抓取失败，跳过此文章`);
-          continue;
+          console.log(`⚠️ Jina API失败，使用RSS描述作为内容`);
+          // 降级处理：使用RSS描述或标题
+          fullContent = `标题: ${rssArticle.title}\n\n暂无全文内容，此文章可能被源网站保护或Jina API访问受限。`;
         }
-        console.log(`✅ 全文抓取成功，长度: ${fullContent.length}字符`);
+        console.log(`✅ 内容获取完成，长度: ${fullContent.length}字符`);
+        
         // ===== 步骤3: Gemini LLM 分析全文 - 摘要和打分 =====
         const aiAnalysis = await analyzeWithGemini(rssArticle.title, fullContent, verticalName);
+        
         // 组装最终数据 - 匹配实际数据库表结构
         const article = {
           title: rssArticle.title,
@@ -52,8 +58,20 @@ serve(async (req)=>{
         };
         processedArticles.push(article);
         console.log(`✅ 文章处理完成，评分: ${aiAnalysis.score}`);
+        
+        // 🕐 添加请求间隔，避免被Jina反DDOS机制误判
+        if (i < Math.min(rssArticles.length, 5) - 1) { // 不是最后一篇文章
+          console.log(`⏳ 等待2秒后处理下一篇文章...`);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2秒间隔
+        }
+        
       } catch (articleError) {
         console.error(`❌ 文章处理失败: ${articleError.message}`);
+        // 即使出错也要等待，避免频繁重试
+        if (i < Math.min(rssArticles.length, 5) - 1) {
+          console.log(`⏳ 错误后等待1秒...`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 错误后1秒间隔
+        }
       }
     }
     // 插入数据库
@@ -153,35 +171,71 @@ async function fetchRSSBasicInfo(rssUrl) {
   }
   return articles;
 }
-// ===== 步骤2: Jina API 读取全文 =====
+// ===== 步骤2: Jina API 读取全文 (付费版带重试机制) =====
 async function fetchFullTextWithJina(url) {
-  console.log(`📖 开始Jina API抓取全文...`);
+  console.log(`📖 开始Jina API全文抓取...`);
+  
   const jinaApiKey = Deno.env.get('JINA_API_KEY');
   if (!jinaApiKey) {
-    throw new Error('未配置JINA_API_KEY');
+    console.log(`❌ 未配置JINA_API_KEY`);
+    return null;
   }
-  const jinaUrl = `https://r.jina.ai/${url}`;
-  console.log(`📖 调用Jina API: ${jinaUrl}`);
-  const response = await fetch(jinaUrl, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${jinaApiKey}`,
-      'Accept': 'application/json'
-    },
-    signal: AbortSignal.timeout(45000)
-  });
-  console.log(`📖 Jina API响应状态: ${response.status}`);
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Jina API失败 (${response.status}): ${errorText}`);
+  
+  // 重试机制：最多重试3次
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      console.log(`📖 第${attempt}次尝试Jina API...`);
+      
+      const jinaUrl = `https://r.jina.ai/${url}`;
+      const response = await fetch(jinaUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${jinaApiKey}`,
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (compatible; OSINT-Workstation/3.0; +https://industry-arsenal.vercel.app)',
+          'X-Return-Format': 'text' // 指定返回纯文本格式
+        },
+        signal: AbortSignal.timeout(45000) // 45秒超时
+      });
+      
+      console.log(`📖 Jina API响应状态: ${response.status}`);
+      
+      if (response.status === 429) {
+        console.log(`⚠️ 遇到速率限制，等待${attempt * 2}秒后重试...`);
+        await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+        continue;
+      }
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data && data.data.content && data.data.content.length > 100) {
+          console.log(`📖 ✅ Jina API成功，长度: ${data.data.content.length}字符`);
+          return data.data.content;
+        } else if (data.content && data.content.length > 100) {
+          console.log(`📖 ✅ Jina API成功，长度: ${data.content.length}字符`);
+          return data.content;
+        } else {
+          console.log(`⚠️ Jina API返回内容过短: ${JSON.stringify(data).substring(0, 200)}...`);
+        }
+      } else {
+        const errorText = await response.text();
+        console.log(`⚠️ Jina API错误 ${response.status}: ${errorText.substring(0, 200)}`);
+      }
+      
+    } catch (error) {
+      console.log(`⚠️ 第${attempt}次尝试失败: ${error.message}`);
+    }
+    
+    // 如果不是最后一次尝试，等待后重试
+    if (attempt < 3) {
+      const waitTime = attempt * 1000; // 递增等待时间：1秒、2秒
+      console.log(`⏳ 等待${waitTime/1000}秒后重试...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
   }
-  const data = await response.json();
-  if (data.content && data.content.length > 100) {
-    console.log(`📖 ✅ 全文抓取成功，长度: ${data.content.length}字符`);
-    return data.content;
-  } else {
-    throw new Error(`Jina API返回内容为空或过短`);
-  }
+  
+  console.log(`❌ Jina API三次尝试都失败，返回null`);
+  return null;
 }
 // ===== 步骤3: Gemini LLM 分析全文 - 摘要和打分 =====
 async function analyzeWithGemini(title, fullContent, verticalName) {
