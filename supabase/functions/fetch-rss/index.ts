@@ -202,50 +202,47 @@ async function getAIQuickScore(title: string, description: string, verticalName:
 
     const newsContent = `标题：${title}\n描述：${description || '无描述'}`
     
-    const prompt = `你是一个专业的${verticalName}行业分析师。请基于以下标准为新闻打分：
-
-评分维度：
-1. 重要性(40%)：技术突破/市场动态/政策法规的重要程度
-2. 影响范围(30%)：全球性>区域性>企业级>概念性
-3. 时效性(20%)：突发>独家>定期>历史
-4. 信息质量(10%)：权威来源>详实数据>明确来源>推测性质
-
-评分标准：
-10分：行业震撼级 - 颠覆性突破、重大并购、关键政策
-9分：极高重要性 - 重要进展、大型融资、重要合作  
-8分：高度重要 - 新品发布、中型并购、展会重点
-7分：值得关注 - 技术升级、中等融资、市场扩张
-6分：一般重要 - 产品升级、小型融资、一般合作
-5分：中等价值 - 业务进展、参展信息、团队动态
-4分：较低价值 - 企业动态、营销活动、媒体采访
-3分：价值有限 - 转发内容、广告性质、过时信息
-2分：价值较低 - 无关内容、重复信息、错误信息
-1分：无价值 - 完全无关、恶意信息、无效内容
+    const prompt = `请为以下新闻打1-10分：
 
 新闻内容：
 ${newsContent}
 
-请只返回1-10的数字分数，基于以上标准进行评分。`
+请只返回数字，不要其他内容。`
 
     console.log('🤖 调用Gemini进行快速评分...')
+    console.log('🔧 API Key:', geminiApiKey ? `${geminiApiKey.substring(0, 10)}...` : 'MISSING')
     
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+    // 🔥 使用标准curl格式的API调用，包含X-goog-api-key头部
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': geminiApiKey,
       },
       body: JSON.stringify({
         contents: [{
           parts: [{ text: prompt }]
-        }]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 10,
+          topP: 0.8,
+          topK: 10
+        }
       })
     })
 
+    console.log('🔧 Gemini响应状态:', geminiResponse.status)
+    
     if (!geminiResponse.ok) {
-      throw new Error(`Gemini API失败: ${geminiResponse.status}`)
+      const errorText = await geminiResponse.text()
+      console.error('🔧 Gemini API详细错误:', errorText)
+      throw new Error(`Gemini API失败: ${geminiResponse.status} - ${errorText}`)
     }
 
     const geminiData = await geminiResponse.json()
+    console.log('🔧 Gemini响应数据:', JSON.stringify(geminiData, null, 2))
+    
     const aiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
 
     if (!aiText) {
@@ -258,7 +255,7 @@ ${newsContent}
       const score = parseInt(scoreMatch[1])
       return Math.max(1, Math.min(10, score))
     } else {
-      throw new Error('AI返回格式错误')
+      throw new Error('AI返回格式错误: ' + aiText)
     }
 
   } catch (error) {
@@ -285,10 +282,11 @@ ${newsContent}
 
 请直接返回摘要内容，不要格式化，不要前缀。`
 
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': geminiApiKey,
       },
       body: JSON.stringify({
         contents: [{
@@ -352,10 +350,11 @@ ${newsContent}
   "score_ai": 数字分数
 }`
 
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': geminiApiKey,
       },
       body: JSON.stringify({
         contents: [{
