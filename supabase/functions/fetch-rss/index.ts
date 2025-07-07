@@ -38,8 +38,12 @@ serve(async (req)=>{
         let fullContent = await fetchFullTextWithJina(rssArticle.link);
         if (!fullContent || fullContent.length < 100) {
           console.log(`⚠️ Jina API失败，使用RSS描述作为内容`);
-          // 降级处理：使用RSS描述或标题
-          fullContent = `标题: ${rssArticle.title}\n\n暂无全文内容，此文章可能被源网站保护或Jina API访问受限。`;
+          // 降级处理：使用RSS描述作为内容
+          if (rssArticle.rssDescription && rssArticle.rssDescription.length > 20) {
+            fullContent = `标题: ${rssArticle.title}\n\n${rssArticle.rssDescription}\n\n[注：因网站保护机制，未能获取完整正文，以上为RSS摘要内容]`;
+          } else {
+            fullContent = `标题: ${rssArticle.title}\n\n暂无全文内容，此文章可能被源网站保护或Jina API访问受限。`;
+          }
         }
         console.log(`✅ 内容获取完成，长度: ${fullContent.length}字符`);
         
@@ -158,13 +162,29 @@ async function fetchRSSBasicInfo(rssUrl) {
     const itemContent = itemMatch[1];
     const titleMatch = itemContent.match(/<title[^>]*>(.*?)<\/title>/is);
     const linkMatch = itemContent.match(/<link[^>]*>(.*?)<\/link>/is);
+    const descMatch = itemContent.match(/<description[^>]*>(.*?)<\/description>/is);
+    const summaryMatch = itemContent.match(/<summary[^>]*>(.*?)<\/summary>/is);
+    const contentMatch = itemContent.match(/<content:encoded[^>]*>(.*?)<\/content:encoded>/is);
+    
     if (titleMatch && linkMatch) {
       const title = cleanText(titleMatch[1]);
       const link = linkMatch[1].trim();
+      let rssDescription = '';
+      
+      // 尝试获取RSS中的描述内容
+      if (contentMatch && contentMatch[1]) {
+        rssDescription = cleanText(contentMatch[1]);
+      } else if (descMatch && descMatch[1]) {
+        rssDescription = cleanText(descMatch[1]);
+      } else if (summaryMatch && summaryMatch[1]) {
+        rssDescription = cleanText(summaryMatch[1]);
+      }
+      
       if (title && link && link.startsWith('http')) {
         articles.push({
           title,
-          link
+          link,
+          rssDescription: rssDescription || ''
         });
       }
     }
