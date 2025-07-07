@@ -191,7 +191,7 @@ async function fetchRSSBasicInfo(rssUrl) {
   }
   return articles;
 }
-// ===== 步骤2: Jina API 读取全文 (付费版带重试机制) =====
+// ===== 步骤2: Jina API 读取全文 (分层优化策略) =====
 async function fetchFullTextWithJina(url) {
   console.log(`📖 开始Jina API全文抓取...`);
   
@@ -201,10 +201,27 @@ async function fetchFullTextWithJina(url) {
     return null;
   }
   
-  // 重试机制：最多重试2次 (减少重试次数，避免总时间过长)
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  // 分层尝试策略：快速模式 -> 标准模式
+  const strategies = [
+    {
+      name: '快速模式',
+      timeout: 20000,
+      pageTimeout: '10000',
+      waitSelector: 'article, main'
+    },
+    {
+      name: '标准模式', 
+      timeout: 40000,
+      pageTimeout: '20000',
+      waitSelector: 'article, main, .content, #content, .post-content, .entry-content'
+    }
+  ];
+  
+  for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex++) {
+    const strategy = strategies[strategyIndex];
+    
     try {
-      console.log(`📖 第${attempt}次尝试Jina API...`);
+      console.log(`📖 尝试${strategy.name}...`);
       
       const jinaUrl = `https://r.jina.ai/${url}`;
       const response = await fetch(jinaUrl, {
@@ -213,25 +230,24 @@ async function fetchFullTextWithJina(url) {
           'Authorization': `Bearer ${jinaApiKey}`,
           'Accept': 'application/json',
           'User-Agent': 'Mozilla/5.0 (compatible; OSINT-Workstation/3.0; +https://industry-arsenal.vercel.app)',
-          'X-Return-Format': 'markdown', // 使用markdown格式，通常内容更完整
-          'X-Retain-Images': 'none',     // 不保留图片，专注文本内容
-          'X-Wait-For-Selector': 'article, main, .content, #content, .post-content', // 等待主要内容加载
-          'X-Timeout': '15000'           // 15秒页面加载超时
+          'X-Return-Format': 'markdown',
+          'X-Retain-Images': 'none',
+          'X-Wait-For-Selector': strategy.waitSelector,
+          'X-Timeout': strategy.pageTimeout
         },
-        signal: AbortSignal.timeout(30000) // 30秒超时 (减少超时时间，快速失败)
+        signal: AbortSignal.timeout(strategy.timeout)
       });
       
-      console.log(`📖 Jina API响应状态: ${response.status}`);
+      console.log(`📖 ${strategy.name} - 响应状态: ${response.status}`);
       
       if (response.status === 429) {
-        console.log(`⚠️ 遇到速率限制，等待${attempt * 2}秒后重试...`);
-        await new Promise(resolve => setTimeout(resolve, attempt * 2000));
-        continue;
+        console.log(`⚠️ ${strategy.name}遇到速率限制，尝试下一个策略...`);
+        continue; // 直接尝试下一个策略
       }
       
       if (response.ok) {
         const data = await response.json();
-        console.log(`📖 Jina API响应结构: ${JSON.stringify(data).substring(0, 300)}...`);
+        console.log(`📖 ${strategy.name} - 响应结构: ${JSON.stringify(data).substring(0, 200)}...`);
         
         // 尝试多种可能的响应格式
         let content = null;
@@ -248,29 +264,29 @@ async function fetchFullTextWithJina(url) {
         }
         
         if (content && content.length > 100) {
-          console.log(`📖 ✅ Jina API成功，长度: ${content.length}字符`);
+          console.log(`📖 ✅ ${strategy.name}成功，长度: ${content.length}字符`);
           return content;
         } else {
-          console.log(`⚠️ Jina API返回内容过短或无效: ${JSON.stringify(data).substring(0, 200)}...`);
+          console.log(`⚠️ ${strategy.name}返回内容过短: ${content?.length || 0}字符`);
+          // 内容过短，尝试下一个策略
         }
       } else {
         const errorText = await response.text();
-        console.log(`⚠️ Jina API错误 ${response.status}: ${errorText.substring(0, 200)}`);
+        console.log(`⚠️ ${strategy.name}错误 ${response.status}: ${errorText.substring(0, 150)}`);
       }
       
     } catch (error) {
-      console.log(`⚠️ 第${attempt}次尝试失败: ${error.message}`);
+      console.log(`⚠️ ${strategy.name}失败: ${error.message}`);
     }
     
-    // 如果不是最后一次尝试，等待后重试
-    if (attempt < 2) {
-      const waitTime = 2000; // 固定2秒等待时间
-      console.log(`⏳ 等待${waitTime/1000}秒后重试...`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+    // 在策略之间添加短暂延迟
+    if (strategyIndex < strategies.length - 1) {
+      console.log(`⏳ 等待2秒后尝试下一个策略...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
   
-  console.log(`❌ Jina API两次尝试都失败，返回null`);
+  console.log(`❌ 所有Jina API策略都失败，返回null`);
   return null;
 }
 // ===== 步骤3: Gemini LLM 分析全文 - 摘要和打分 =====
