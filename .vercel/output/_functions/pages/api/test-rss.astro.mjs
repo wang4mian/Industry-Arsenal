@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 export { renderers } from '../../renderers.mjs';
 
-const supabaseUrl = undefined                                   ;
-const supabaseKey = undefined                                        ;
+const supabaseUrl = "https://msvgeriacsaaakmxvqye.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zdmdlcmlhY3NhYWFrbXh2cXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc2MDQyMDksImV4cCI6MjA1MzE4MDIwOX0.wF83FpJ8N9SCj6BKAeLxHtmaS2cPsCPs1BoXzVwvJQ0";
 const supabase = createClient(supabaseUrl, supabaseKey);
 async function GET() {
   try {

@@ -12,7 +12,7 @@ const ACTION_QUERY_PARAMS$1 = {
   actionName: "_action"};
 const ACTION_RPC_ROUTE_PATTERN = "/_actions/[...path]";
 
-const __vite_import_meta_env__ = {"ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "SITE": "https://osint-workstation.vercel.app", "SSR": true};
+const __vite_import_meta_env__ = {"ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zdmdlcmlhY3NhYWFrbXh2cXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc2MDQyMDksImV4cCI6MjA1MzE4MDIwOX0.wF83FpJ8N9SCj6BKAeLxHtmaS2cPsCPs1BoXzVwvJQ0", "PUBLIC_SUPABASE_URL": "https://msvgeriacsaaakmxvqye.supabase.co", "SITE": "https://osint-workstation.vercel.app", "SSR": true};
 const ACTION_QUERY_PARAMS = ACTION_QUERY_PARAMS$1;
 const codeToStatusMap = {
   // Implemented from IANA HTTP Status Code Registry

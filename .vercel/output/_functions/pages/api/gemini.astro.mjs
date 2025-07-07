@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 export { renderers } from '../../renderers.mjs';
 
-const supabaseUrl = undefined                                   ;
-const supabaseKey = undefined                                        ;
+const supabaseUrl = "https://msvgeriacsaaakmxvqye.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zdmdlcmlhY3NhYWFrbXh2cXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc2MDQyMDksImV4cCI6MjA1MzE4MDIwOX0.wF83FpJ8N9SCj6BKAeLxHtmaS2cPsCPs1BoXzVwvJQ0";
 const supabase = createClient(supabaseUrl, supabaseKey);
 async function POST({ request }) {
   try {
@@ -24,7 +24,7 @@ async function POST({ request }) {
 关键词：[关键词1,关键词2,关键词3]
 评分：[数字]
 `;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${undefined                              }`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${"AIzaSyBJxIj9UNxJecaWxGerH5rVFtK_exUQYRE"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
